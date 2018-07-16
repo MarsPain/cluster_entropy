@@ -12,9 +12,9 @@ import p3_cluster as clus3
 
 def gene_dic(path):
     """
-    {'词根0':['词','词','词']}
-    根据同义词表创建dic
-    :return:
+    根据同义词表创建词根到词的dict
+    :param path:同义词表的路径
+    :return:{'词根0':['词','词','词']}
     """
     combine_dict = {}
     with open(path, 'r', encoding='utf-8') as file:
@@ -27,10 +27,9 @@ def gene_dic(path):
 
 def gene_dic_2(path):
     """
-    {'词':0,'词':0,'词':1}
-    {'词':'词根0','词':'词根0','词':'词根1'}
-    :param path:
-    :return:
+    根据同义词表创建词到词根的dict
+    :param path:同义词表的路径
+    :return:{'词1':'词根0','词2':'词根0'...,'词n':'词根0'}
     """
     combine_dict = {}
     with open(path, 'r', encoding='utf-8') as file:
@@ -40,6 +39,7 @@ def gene_dic_2(path):
             for word in words:
                 # combine_dict[word]=i
                 combine_dict[word] = words[0]
+    # print("combine_dict:",combine_dict)
     return combine_dict
 
 
@@ -79,8 +79,9 @@ if __name__ == '__main__':
     # series = series.replace(np.nan, '')
     new_dic = gene_dic('data/hebing.txt')
     new_dic_2 = gene_dic_2('data/hebing.txt')
-    # 创建dataFrame存放onehot
+    # 创建dataFrame存放onehot，横轴上的列索引标签为同义词的词根
     df = pd.DataFrame(np.zeros((len(series), len(new_dic))), columns=new_dic.keys())
+    # print("df", df)
     # series去掉了nan值，index是不连贯的
     for indexs in series.index:
         item_str = series[indexs]
@@ -89,22 +90,29 @@ if __name__ == '__main__':
         item_list = item_str.strip().split(' ')
         for item in item_list:
             if item in new_dic_2:
-                df[new_dic_2[item]].loc[indexs] = 1
+                df[new_dic_2[item]].loc[indexs] = 1 #在
             else:
                 print(item)  # 输出没有匹配的字符
     # 删除没有任何匹配的词列
-    max_value = df.max()
+    max_value = df.max()    #返回df中每一行的最大值及最大值所在的列的索引
+    # print("max_value:", max_value)
     drop_list = list(max_value[max_value == 0].index)
     df = df.drop(drop_list, axis=1)
     # we = df.columns.size
     # 计算所有症状中每个词的频数，排序
-    count_dic = dict(df.sum())
+    count_dic = dict(df.sum())  #sum对每一列求和，即能得到每个词出现的频数
+    # print("count_dic:" ,count_dic)
     list_name, list_frequency = clus1.dic_list(count_dic)
+    # print(list_name, list_frequency)
     df = df.ix[:, list_name]  # 按照词频对列重新排序
+    # print("df:", df)
     # 两两组合的频数，排序
     combinations_dic_fre = clus1.combinations_dic_2(df)
+    # print("combinations_dic_fre", combinations_dic_fre)
     combinations_list, combinations_frequency = clus1.dic_list(combinations_dic_fre)
-    # 每个词的频率，每个两两组合的频率
+    # print("combinations_list", combinations_list, "\n","combinations_frequency",combinations_frequency)
+    #计算每个词的频率和每个两两组合的频率，后面用于计算互信息，因为互信息是根据边缘熵和联合熵得到的，
+    # 而熵又是基于每个变量的频率计算得到的
     row_len = df.iloc[:, 0].size
     # list_fre = [i/sum(list_frequency) for i in list_frequency]
     list_fre = [i / row_len for i in list_frequency]

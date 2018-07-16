@@ -70,6 +70,7 @@ def one_hot(list_name, input_data, column_name='处方（处理）'):
 
 
 # 4. 药物两两组合，计算组合频率，返回字典格式
+#这个函数没弄太明白
 def combinations_dic_2(one_hot_data):
     """
     两两组合的频数，(0,1):5
@@ -79,7 +80,9 @@ def combinations_dic_2(one_hot_data):
     # row_len = one_hot_data.iloc[:,0].size
     row_len = len(one_hot_data)
     cols = list(one_hot_data.columns)
+    # print("cols:", len(cols))
     wordMap = dict(zip(cols, range(len(cols))))
+    # print("wordMap:", wordMap)
     combinations_fre = {}
     for i in range(row_len):
         row = one_hot_data.iloc[i, :]
