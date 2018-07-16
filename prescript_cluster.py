@@ -90,13 +90,14 @@ if __name__ == '__main__':
         item_list = item_str.strip().split(' ')
         for item in item_list:
             if item in new_dic_2:
-                df[new_dic_2[item]].loc[indexs] = 1 #在
+                df[new_dic_2[item]].loc[indexs] = 1 #在one-hot向量的相应索引处进行激活
             else:
                 print(item)  # 输出没有匹配的字符
     # 删除没有任何匹配的词列
     max_value = df.max()    #返回df中每一行的最大值及最大值所在的列的索引
     # print("max_value:", max_value)
     drop_list = list(max_value[max_value == 0].index)
+    # print("drop_list:", len(drop_list))
     df = df.drop(drop_list, axis=1)
     # we = df.columns.size
     # 计算所有症状中每个词的频数，排序
@@ -104,7 +105,11 @@ if __name__ == '__main__':
     # print("count_dic:" ,count_dic)
     list_name, list_frequency = clus1.dic_list(count_dic)
     # print(list_name, list_frequency)
-    df = df.ix[:, list_name]  # 按照词频对列重新排序
+    # print("df:", df)
+    #按照词频对列重新排序，list_name中是按照词频降序排列的病症名，将list_name作为横轴列标签，
+    # 即能实现列标签的重新排序，按照list_name重新排序后，list_name就能用于生成病症和索引之间的相互映射字典了，
+    # 具体见utils.py中的word_2_num和num_2_word这两个函数
+    df = df.ix[:, list_name]
     # print("df:", df)
     # 两两组合的频数，排序
     combinations_dic_fre = clus1.combinations_dic_2(df)

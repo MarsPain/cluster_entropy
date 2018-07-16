@@ -85,12 +85,15 @@ def combinations_dic_2(one_hot_data):
     # print("wordMap:", wordMap)
     combinations_fre = {}
     for i in range(row_len):
-        row = one_hot_data.iloc[i, :]
-        list_word = list(row[row == 1].index)
-        combinations = list(itertools.combinations(list_word, 2))
+        row = one_hot_data.iloc[i, :]   #逐行选取一整行的数据
+        # print("row:", row)
+        list_word = list(row[row == 1].index)   #获取值为1所在列的索引，即该行中出现的具体病症
+        # print(("list_word:", list_word))
+        combinations = list(itertools.combinations(list_word, 2))   #对list_word中的元素进行两两组合
+        # print("combinations:", combinations)
         for item in combinations:
-            pre, suf = item
-            item = wordMap[pre], wordMap[suf]
+            pre, suf = item #两两组合中的两个病症名称
+            item = wordMap[pre], wordMap[suf]   #获得病症到索引的映射
             combinations_fre[item] = (combinations_fre[item] if item in combinations_fre else 0) + 1
     key_list = sorted(combinations_fre.items(), key=operator.itemgetter(0))
     combinations_fre = dict(key_list)
