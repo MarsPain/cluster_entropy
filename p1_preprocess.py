@@ -57,6 +57,7 @@ def dic_list(dic):
     for i in reversed_list:
         list_name.append(i[0])
         list_frequecy.append(i[-1])
+    # print("list_name:", list_name, "\n", "list_frequecy:", list_frequecy)
     return list_name, list_frequecy
 
 
@@ -70,7 +71,6 @@ def one_hot(list_name, input_data, column_name='处方（处理）'):
 
 
 # 4. 药物两两组合，计算组合频率，返回字典格式
-#这个函数没弄太明白
 def combinations_dic_2(one_hot_data):
     """
     两两组合的频数，(0,1):5
@@ -95,8 +95,11 @@ def combinations_dic_2(one_hot_data):
             pre, suf = item #两两组合中的两个病症名称
             item = wordMap[pre], wordMap[suf]   #获得病症到索引的映射
             combinations_fre[item] = (combinations_fre[item] if item in combinations_fre else 0) + 1
-    key_list = sorted(combinations_fre.items(), key=operator.itemgetter(0))
+    # print("combinations_fre",combinations_fre.items())
+    key_list = sorted(combinations_fre.items(), key=operator.itemgetter(0)) #按照两两组合的大小进行排序(其实在这里进行排序没有意义，转成dict仍然无序)
+    # print("key_list:", type(key_list), key_list)
     combinations_fre = dict(key_list)
+    # print("combinations_fre", type(combinations_fre), combinations_fre)
     return combinations_fre
 
 

@@ -9,6 +9,7 @@ def calculate_correlation(combinations_list, combinations_fre, list_fre):
     for i in range(len(combinations_list)):
         flag_1, flag_2, flag_3 = 1, 1, 1
         pre, suf = combinations_list[i]
+        #熵的计算公式有点不对劲？
         H_pre = -list_fre[pre] * log(list_fre[pre]) - (1 - list_fre[pre]) * log((1 - list_fre[pre]))
         H_suf = -list_fre[suf] * log(list_fre[suf]) - (1 - list_fre[suf]) * log((1 - list_fre[suf]))
         param_1 = list_fre[pre] - combinations_fre[i]
@@ -55,13 +56,14 @@ def relatives_2(list_name, data, relatives_num):
     relatives_list = [[] for i in range(len(list_name))]
     length = data.shape[0]
     for i in range(length):
+        #先遍历所有两两组合的互信息，并分别添加到每个变量的列表中
         words = data['组合'][i]
         # words = data['药物'][i]
         pre_index = list_name.index(words[0])
         relatives_list[pre_index].append(words)
         suf_index = list_name.index(words[1])
         relatives_list[suf_index].append(words)
-    return utils.cut_by_num(relatives_list, relatives_num)
+    return utils.cut_by_num(relatives_list, relatives_num)  #对互信息列表进行裁剪，得到的就是亲友团
 
 
 if __name__ == "__main__":

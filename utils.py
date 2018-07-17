@@ -49,6 +49,7 @@ def cut_by_num(list_double, max_num):
     """
     new_list = list()
     for i, row in enumerate(list_double):
+        # print("i:", i, "\n", "row:", row)
         if len(row) > max_num:
             new_list.append(row[:max_num])
         else:
@@ -61,10 +62,16 @@ def write_csv(name_list, file_path, *args):
         print('list长度不对应！')
         sys.exit(1)
     series_list = []
+    #注意这里输出数据的技巧
     for i, name in enumerate(name_list):
+        # print("i:", i, "\n", "name:", name)
+        #注意这里Series的用法，args是参数列表，代表两个列表，直接用整个列表构造Series，
+        # 设置name为列索引
         column = pd.Series(args[i], name=name)
+        # print("column:", column)
         series_list.append(column)
-    data = pd.concat(series_list, axis=1)
+    data = pd.concat(series_list, axis=1)   #对两个Series进行拼接
+    # print("data:", data)
     data = data.sort_values(by=name_list[1], ascending=False)
     data.to_csv(file_path, index=False, encoding='utf-8')
     return data

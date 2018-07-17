@@ -104,7 +104,7 @@ if __name__ == '__main__':
     count_dic = dict(df.sum())  #sum对每一列求和，即能得到每个词出现的频数
     # print("count_dic:" ,count_dic)
     list_name, list_frequency = clus1.dic_list(count_dic)
-    # print(list_name, list_frequency)
+    print("list_name:", list_name, "\n", "list_frequency:", list_frequency)
     # print("df:", df)
     #按照词频对列重新排序，list_name中是按照词频降序排列的病症名，将list_name作为横轴列标签，
     # 即能实现列标签的重新排序，按照list_name重新排序后，list_name就能用于生成病症和索引之间的相互映射字典了，
@@ -115,7 +115,7 @@ if __name__ == '__main__':
     combinations_dic_fre = clus1.combinations_dic_2(df)
     # print("combinations_dic_fre", combinations_dic_fre)
     combinations_list, combinations_frequency = clus1.dic_list(combinations_dic_fre)
-    # print("combinations_list", combinations_list, "\n","combinations_frequency",combinations_frequency)
+    print("combinations_list", combinations_list, "\n","combinations_frequency",combinations_frequency)
     #计算每个词的频率和每个两两组合的频率，后面用于计算互信息，因为互信息是根据边缘熵和联合熵得到的，
     # 而熵又是基于每个变量的频率计算得到的
     row_len = df.iloc[:, 0].size
@@ -130,9 +130,10 @@ if __name__ == '__main__':
     # 2 计算互信息
     correlation = clus2.calculate_correlation(combinations_list, combinations_fre, list_fre)
     combinations_name = utils.num_2_word(list_name, combinations_list)  # num_2_word 数字转文字
-    data = utils.write_csv(['组合', '关联度系数'], 'data/correlation.csv', combinations_name, correlation)
+    data = utils.write_csv(['组合', '关联度系数'], 'data/correlation.csv', combinations_name, correlation) #将互信息大小经过排序，然后再写入到csv中
     # 得到每个症状的亲友团list
     relatives_list = clus2.relatives_2(list_name, data, 8)
+    # print("relatives_list", relatives_list) #这里的亲友团是用嵌套列表存储的，用字典存储应该更好吧？键值对为变量-亲友团列表
 
     # 3 亲友团聚类
     clus3.cluster_main2(relatives_list, list_name)
