@@ -25,15 +25,19 @@ def duplicate_removal(relatives_list, list_name):
 
 
 def cluster_main2(relatives_list, list_name):
+    # print("relatives_list", relatives_list)
+    #去除重复项，目的在于将每个特诊的亲友团提取出来，之前的亲友团依然是以两两组合形式存在的
     list_qyt = duplicate_removal(relatives_list, list_name)
     # 使用数字代替列表中的项
     list_num = utils.word_2_num(list_name, list_qyt)
-    for group_num in range(3, 9):
+    for group_num in range(3, 9):   #亲友团的数量
         new_list = utils.cut_by_num(list_num, group_num)
-        list_num2 = del_by_correlation(new_list)
+        list_num2 = del_by_correlation(new_list)    #删除弱相关项，留下强相关的两两组合
         reWord = utils.num_2_word(list_name, list_num2)
         # 创建二元组
         doubleSet = create_double_set(list_num2)
+        # print("doubleSet:", doubleSet)
+        #进行团合并操作，一直到无法继续合并
         max_num, bestSet = merge_loop(doubleSet, list_name, 'data/group' + str(group_num) + '.csv')
         # 信息利用率
         print(max_num, '/', group_num, '=', max_num / group_num)
@@ -57,14 +61,16 @@ def merge_loop(double_set, list_name, file=None):
     count_list = []
     group_list = []
     while len(oldSet) > 0:
-        print('成员数:', len(list(oldSet)[0]))
-        print('个数:', len(oldSet))
+        #oldSet为需要继续进行合并操作的团
+        print('成员数:', len(list(oldSet)[0])) #oldSet中团的成员数量
+        print('个数:', len(oldSet))   #oldSet中团的数量
         print(oldSet)
         num_list.append(len(list(oldSet)[0]))
         count_list.append(len(oldSet))
         group_list.append(oldSet)
         bestSet = oldSet
-        oldSet = merge_group(oldSet, double_set)
+        oldSet = merge_group(oldSet, double_set)    #返回新组合成的团，对这些团继续进行合并操作
+    #若oldSet不存在，则说明聚类收敛、合并到最大的团了，无法继续合并了
     if file is not None:
         group_list = utils.num_2_word(list_name, group_list)
         utils.write_csv(['成员数', '个数', '团'], file, num_list, count_list, group_list)
@@ -85,7 +91,7 @@ def merge_group(old_set, double_set=None):
     new_set = set()
     old_list = list(old_set)
     item_len = len(old_list[0])
-    for comb in itertools.combinations(old_list, 2):
+    for comb in itertools.combinations(old_list, 2):    #itertools.combinations创建一个迭代器，返回old_list中所有长度为2的子序列
         set1 = set(comb[0])
         set2 = set(comb[1])
         if len(set1 & set2) == item_len - 1:
@@ -118,7 +124,7 @@ def create_double_set(list_num2):
     :param list_num2:
     :return:
     """
-    double_set = set()
+    double_set = set()  #使用元组能够排除重复项
     for i, row in enumerate(list_num2):
         for item in row:
             two = [i, item]

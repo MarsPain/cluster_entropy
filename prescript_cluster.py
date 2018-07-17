@@ -54,20 +54,26 @@ def group_clean(pkl_file):
     :param pkl_file:
     :return:
     """
-    group = utils.load_pickle(pkl_file)
+    group = utils.load_pickle(pkl_file) #group中每种大小的团组成一个列表
+    # print("group:", len(group), group)
     all_list = []
-    for i in range(len(group) - 1, 1, -1):
+    for i in range(len(group) - 1, 1, -1):  #从成员数最大的团的列表开始遍历
         item = list(group[i])
         member_num = len(item[0])
+        print("member_num:", member_num)
         new_item = copy.deepcopy(item)
+        #遍历item中的所有两两组合，若两个亲友团的交集为亲友团大小member_num-1，则删除这两个亲友团（为什么这么做？）
         for comb in itertools.combinations(item, 2):
             set1 = set(comb[0])
             set2 = set(comb[1])
             if len(set1 & set2) == member_num - 1:
+                print("set1:", set1, "\n", "set2:", set2)
+                # print("comb0:", comb[0], "\n", "comb1:", comb[1])
                 if comb[0] in new_item:
                     new_item.remove(comb[0])
                 if comb[1] in new_item:
                     new_item.remove(comb[1])
+                print("new_item:", new_item)
         all_list.extend(new_item)
     return all_list
 
@@ -137,7 +143,8 @@ if __name__ == '__main__':
 
     # 3 亲友团聚类
     clus3.cluster_main2(relatives_list, list_name)
-    # 对每个group进行合并，得到最终的聚类
+    # 对每个group进行合并，得到最终的聚类（为什么要进行这一步？意义是什么？不应该用不同的参数直接得到最终的聚类后，再
+    #  用信息利用率和算法敏感性进行验证即可么？）
     group_5_all = group_clean('data/group5.csv.pkl')
     # group_5_all = utils.num_2_word(list_name, group_5_all)
     group_6_all = group_clean('data/group6.csv.pkl')
