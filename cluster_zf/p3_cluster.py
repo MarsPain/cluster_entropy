@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import utils
+from cluster_zf import utils
 import pandas as pd
 import itertools
 import copy
-from timeHelper import clock
+from cluster_zf.timeHelper import clock
 import numpy as np
 
 

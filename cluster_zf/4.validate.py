@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import pandas as pd
-import utils
+from cluster_zf import utils
 
 one_hot_df = pd.read_csv('one_hot_df.csv')
 data = pd.read_csv(open('classical.csv'))

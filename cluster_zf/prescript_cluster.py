@@ -4,10 +4,10 @@ import numpy as np
 import sys
 import itertools
 import copy
-import utils
-import p1_preprocess as clus1
-import p2_relatives as clus2
-import p3_cluster as clus3
+from cluster_zf import utils
+import cluster_zf.p1_preprocess as clus1
+import cluster_zf.p2_relatives as clus2
+import cluster_zf.p3_cluster as clus3
 
 
 def gene_dic(path):

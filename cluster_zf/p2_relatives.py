@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 from math import log
-import utils
+from cluster_zf import utils
 
 
 def calculate_correlation(combinations_list, combinations_fre, list_fre):
