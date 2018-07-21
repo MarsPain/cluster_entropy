@@ -1,4 +1,6 @@
 import pandas as pd
+import itertools
+import operator
 
 
 def get_data(path):
@@ -57,9 +59,41 @@ def dict_sort(root):
     """
     list_name, list_frequecy = [], []
     reversed_list = sorted(root.items(), key=lambda x: x[1], reverse=True)
-    print("reversed_list", type(reversed_list), reversed_list)
+    # print("reversed_list", type(reversed_list), reversed_list)
     for i in reversed_list:
         list_name.append(i[0])
         list_frequecy.append(i[-1])
     # print("list_name:", list_name, "\n", "list_frequecy:", list_frequecy)
     return list_name, list_frequecy
+
+
+def combine_count(one_hot_data):
+    """
+    对属于同一个样本的词根进行两两组合，并获取每个组合的频数，如(0,1):5
+    :param one_hot_data: type;dataFrame
+    :return: dict{(0,1):15, (0,2):13,...,(n-1,n):2}
+    """
+    # row_len = one_hot_data.iloc[:,0].size
+    row_len = len(one_hot_data)
+    cols = list(one_hot_data.columns)
+    # print("cols:", len(cols))
+    word_map = dict(zip(cols, range(len(cols))))
+    # print("wordMap:", wordMap)
+    combinations_fre = {}
+    for i in range(row_len):
+        row = one_hot_data.iloc[i, :]   # 逐行选取一整行的数据
+        # print("row:", row)
+        list_word = list(row[row == 1].index)   # 获取值为1所在列的索引，即该行中出现的具体病症
+        # print(("list_word:", list_word))
+        combinations = list(itertools.combinations(list_word, 2))   # 对list_word中的元素进行两两组合
+        # print("combinations:", combinations)
+        for item in combinations:
+            pre, suf = item  # 两两组合中的两个病症名称
+            item = word_map[pre], word_map[suf]   # 获得病症到索引的映射
+            combinations_fre[item] = (combinations_fre[item] if item in combinations_fre else 0) + 1
+    # print("combinations_fre",combinations_fre.items())
+    key_list = sorted(combinations_fre.items(), key=operator.itemgetter(0))  # 按照两两组合的大小进行排序(其实在这里进行排序没有意义，转成dict仍然无序)
+    # print("key_list:", type(key_list), key_list)
+    combinations_fre = dict(key_list)
+    # print("combinations_fre", type(combinations_fre), combinations_fre)
+    return combinations_fre

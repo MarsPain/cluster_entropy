@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from data_utils import get_data, root_to_word, word_to_root, dict_sort
+from data_utils import get_data, root_to_word, word_to_root, dict_sort, combine_count
 
 medicine_path = 'data/test3.csv'    # 药物数据
 thesaurus_path = "data/tongyici_3.txt"  # 同义词字典
@@ -10,7 +10,8 @@ class ClusterEntropy:
     def __init__(self):
         self.df = None  # 存储特征的one-hot变量
         self.list_name = None   # 存储排序后的词根名称，由于是有序的，所以可以作为词根到索引的映射字典，详见word_2_num和num_2_word
-        self.list_fre = None    #
+        self.root_fre = None    # 存储词根出现的频率，用于计算互信息
+        self.combine_fre = None  # 存储词根的两两组合出现的频率，同样用于计算互信息
 
     def feature_to_vector(self):
         """
@@ -41,7 +42,7 @@ class ClusterEntropy:
         # print("drop_list:", len(drop_list))
         self.df = self.df.drop(drop_list, axis=1)   # 删除未出现过的词根
 
-    def root_fre(self):
+    def root_frequency(self):
         """
         根据词频对df的列进行重新排序,并获得排列后的特征词和相应的频数,然后计算词根出现的频率
         :return:
@@ -53,9 +54,28 @@ class ClusterEntropy:
         self.df = self.df.ix[:, self.list_name]
         # print(self.df)
         row_len = self.df.iloc[:, 0].size
-        self.list_fre = [i / row_len for i in list_frequency]
+        self.root_fre = [i / row_len for i in list_frequency]   # 用于后面对互信息的计算
+        # print(self.root_fre)
+
+    def combine_frequency(self):
+        """
+        对属于同一个词根进行两两组合，并获取每个组合的频数，然后计算每个组合的频率
+        :return:
+        """
+        combinations_dic_fre = combine_count(self.df)
+        # print("combinations_dic_fre", combinations_dic_fre)
+        combinations_list, combinations_frequency = dict_sort(combinations_dic_fre)
+        # print("combinations_list", combinations_list, "\n","combinations_frequency",combinations_frequency)
+        row_len = self.df.iloc[:, 0].size
+        """
+        计算每个两两组合的频率，后面用于计算互信息，因为互信息是根据边缘熵和联合熵得到的，前面的单个词根的频率用于计算边缘熵
+        两两组合的频率用于计算联合熵
+        """
+        self.combine_fre = [i / row_len for i in combinations_frequency]
+        # print(self.combine_fre)
 
 if __name__ == "__main__":
     Cluster = ClusterEntropy()
     Cluster.feature_to_vector()
-    Cluster.root_fre()
+    Cluster.root_frequency()
+    Cluster.combine_frequency()
