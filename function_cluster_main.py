@@ -1,17 +1,21 @@
 import pandas as pd
 import numpy as np
-from data_utils import get_data, root_to_word, word_to_root, dict_sort, combine_count
+from data_utils import get_data, root_to_word, word_to_root, dict_sort, combine_count, index_2_word, write_csv
+from relatives import calculate_correlation
 
-medicine_path = 'data/test3.csv'    # 药物数据
-thesaurus_path = "data/tongyici_3.txt"  # 同义词字典
+medicine_path = 'data/test3.csv'    # 药物数据的路径
+thesaurus_path = "data/tongyici_3.txt"  # 同义词字典的路径
+correlation_path = 'data/correlation.csv'   # 保存互信息的文件路径
 
 
 class ClusterEntropy:
     def __init__(self):
         self.df = None  # 存储特征的one-hot变量
-        self.list_name = None   # 存储排序后的词根名称，由于是有序的，所以可以作为词根到索引的映射字典，详见word_2_num和num_2_word
+        self.root_name = None   # 存储排序后的词根名称，由于是有序的，所以可以作为词根到索引的映射字典，详见word_2_num和num_2_word
         self.root_fre = None    # 存储词根出现的频率，用于计算互信息
+        self.combine_index = None  # 存储排序后的组合，用词根的索引表示
         self.combine_fre = None  # 存储词根的两两组合出现的频率，同样用于计算互信息
+        self.combine_name = None  # 存储用词根名称表示的
 
     def feature_to_vector(self):
         """
@@ -49,12 +53,12 @@ class ClusterEntropy:
         """
         root_count = dict(self.df.sum())  # sum对每一列求和，即能得到每个词根出现的频数
         # print("count_dic:" ,count_dic)
-        self.list_name, list_frequency = dict_sort(root_count)
+        self.root_name, root_nums = dict_sort(root_count)
         # print("list_name:", self.list_name, "\n", "list_frequency:", self.list_frequency)
-        self.df = self.df.ix[:, self.list_name]
+        self.df = self.df.ix[:, self.root_name]
         # print(self.df)
         row_len = self.df.iloc[:, 0].size
-        self.root_fre = [i / row_len for i in list_frequency]   # 用于后面对互信息的计算
+        self.root_fre = [i / row_len for i in root_nums]   # 用于后面对互信息的计算
         # print(self.root_fre)
 
     def combine_frequency(self):
@@ -62,20 +66,30 @@ class ClusterEntropy:
         对属于同一个词根进行两两组合，并获取每个组合的频数，然后计算每个组合的频率
         :return:
         """
-        combinations_dic_fre = combine_count(self.df)
+        combine_counts = combine_count(self.df)
         # print("combinations_dic_fre", combinations_dic_fre)
-        combinations_list, combinations_frequency = dict_sort(combinations_dic_fre)
+        self.combine_index, combine_nums = dict_sort(combine_counts)
         # print("combinations_list", combinations_list, "\n","combinations_frequency",combinations_frequency)
         row_len = self.df.iloc[:, 0].size
         """
         计算每个两两组合的频率，后面用于计算互信息，因为互信息是根据边缘熵和联合熵得到的，前面的单个词根的频率用于计算边缘熵
         两两组合的频率用于计算联合熵
         """
-        self.combine_fre = [i / row_len for i in combinations_frequency]
+        self.combine_fre = [i / row_len for i in combine_nums]
         # print(self.combine_fre)
+
+    def search_relatives(self):
+        correlation = calculate_correlation(self.combine_index, self.combine_fre, self.root_fre)
+        self.combine_name = index_2_word(self.root_name, self.combine_index)  # 将单独的词根和组合中的索引转换为词
+        # 将互信息按照大小降序排列大小，然后再写入到csv中
+        data = write_csv(['组合', '关联度系数'], correlation_path, self.combine_name, correlation)
+        # # 获取每个症状的亲友团list
+        # relatives_list = clus2.relatives_2(list_name, data, 8)
+        # print("relatives_list", relatives_list) #这里的亲友团是用嵌套列表存储的，用字典存储应该更好吧？键值对为变量-亲友团列表
 
 if __name__ == "__main__":
     Cluster = ClusterEntropy()
     Cluster.feature_to_vector()
     Cluster.root_frequency()
     Cluster.combine_frequency()
+    Cluster.search_relatives()

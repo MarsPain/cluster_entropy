@@ -1,6 +1,7 @@
 import pandas as pd
 import itertools
 import operator
+import sys
 
 
 def get_data(path):
@@ -63,7 +64,7 @@ def dict_sort(root):
     for i in reversed_list:
         list_name.append(i[0])
         list_frequecy.append(i[-1])
-    # print("list_name:", list_name, "\n", "list_frequecy:", list_frequecy)
+    print("list_name:", list_name, "\n", "list_frequecy:", list_frequecy)
     return list_name, list_frequecy
 
 
@@ -97,3 +98,40 @@ def combine_count(one_hot_data):
     combinations_fre = dict(key_list)
     # print("combinations_fre", type(combinations_fre), combinations_fre)
     return combinations_fre
+
+
+def index_2_word(root_name, combine_index):
+    """
+    通过list_name生成（0：当归）这样的dict，把list_num转成对应的中文
+    :param root_name: 所有中药名的list
+    :param combine_index:以数字组成的list/set/tuple（任意层）
+    :return:list_num对应的中文
+    """
+    word_map = dict(enumerate(root_name))
+    # 利用递归
+    if isinstance(combine_index, (list, tuple, set)):
+        newList = list()
+        for item in combine_index:
+            newList.append(index_2_word(root_name, item))
+        return newList
+    else:
+        return word_map[combine_index]
+
+
+def write_csv(name_list, file_path, *args):
+    if len(name_list) != len(args):
+        print('list长度不对应！')
+        sys.exit(1)
+    series_list = []
+    #注意这里输出数据的技巧
+    for i, name in enumerate(name_list):
+        # print("i:", i, "\n", "name:", name)
+        # 注意这里Series的用法，args是参数列表，代表两个列表，直接用整个列表构造Series，设置name为列索引
+        column = pd.Series(args[i], name=name)
+        # print("column:", column)
+        series_list.append(column)
+    data = pd.concat(series_list, axis=1)   # 对两个Series进行拼接
+    # print("data:", data)
+    # data = data.sort_values(by=name_list[1], ascending=False)
+    data.to_csv(file_path, index=False, encoding='utf-8')
+    return data
