@@ -1,4 +1,5 @@
 import itertools
+import pandas as pd
 
 # [[a,b], [a,c], [a,d]]变为[b, c, d]
 # def duplicate_removal(relatives_list, list_name):
@@ -26,3 +27,12 @@ import itertools
 # l = [1,2,3,4,5,6]
 # for i in itertools.combinations(l, 2):
 #     print(i)
+
+df = pd.DataFrame([[1,0,0,0], [0,1,0,0]])
+print(df)
+max_value = df.max()
+drop_list = list(max_value[max_value == 0].index)   # 找到最大值为0所在的列的索引
+print(drop_list)
+# print("drop_list:", len(drop_list))
+df = df.drop(drop_list, axis=1)
+print(df)

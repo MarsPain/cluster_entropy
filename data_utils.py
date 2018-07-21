@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 def get_data(path):
     """
     从中药的原csv文件读取原始数据，并删除缺失数据
@@ -8,8 +9,9 @@ def get_data(path):
     """
     df = pd.read_csv(path, encoding='utf8')
     series = df['symptom']
-    series.dropna(inplace=True) #删掉nan
+    series.dropna(inplace=True)  # 删掉nan
     return series
+
 
 def root_to_word(path):
     """
@@ -44,3 +46,20 @@ def word_to_root(path):
                 root_dict[word] = words[0]
     # print("combine_dict:",combine_dict)
     return root_dict
+
+
+def dict_sort(root):
+    """
+    对词根出现的频率进行降序排列，然后将排序后的词根名称和出现的频率作为list返回
+    :param root:词根出现频率的字典，键值对为（词根-出现频率）
+    :return:list_name["词根1","词根2","词根3"..."词根n"]
+    :return:list_frequecy[int,int,int...int]
+    """
+    list_name, list_frequecy = [], []
+    reversed_list = sorted(root.items(), key=lambda x: x[1], reverse=True)
+    # print("reversed_list", type(reversed_list), reversed_list)
+    for i in reversed_list:
+        list_name.append(i[0])
+        list_frequecy.append(i[-1])
+    # print("list_name:", list_name, "\n", "list_frequecy:", list_frequecy)
+    return list_name, list_frequecy
