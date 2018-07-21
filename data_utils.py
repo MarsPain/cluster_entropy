@@ -50,14 +50,14 @@ def word_to_root(path):
 
 def dict_sort(root):
     """
-    对词根出现的频率进行降序排列，然后将排序后的词根名称和出现的频率作为list返回
-    :param root:词根出现频率的字典，键值对为（词根-出现频率）
+    对词根出现的频率进行降序排列，然后将排序后的词根名称和出现的频数作为list返回
+    :param root:词根出现频数的字典，键值对为（词根-出现频数）
     :return:list_name["词根1","词根2","词根3"..."词根n"]
     :return:list_frequecy[int,int,int...int]
     """
     list_name, list_frequecy = [], []
     reversed_list = sorted(root.items(), key=lambda x: x[1], reverse=True)
-    # print("reversed_list", type(reversed_list), reversed_list)
+    print("reversed_list", type(reversed_list), reversed_list)
     for i in reversed_list:
         list_name.append(i[0])
         list_frequecy.append(i[-1])

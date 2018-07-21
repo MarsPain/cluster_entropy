@@ -28,7 +28,9 @@ import pandas as pd
 # for i in itertools.combinations(l, 2):
 #     print(i)
 
-df = pd.DataFrame([[1,0,0,0], [0,1,0,0]])
+df = pd.DataFrame([[1,0,1,0], [0,1,1,0], [0,1,1,0], [0,0,0,0]])
+row_len = df.iloc[:, 0].size
+print(row_len)
 print(df)
 max_value = df.max()
 drop_list = list(max_value[max_value == 0].index)   # 找到最大值为0所在的列的索引

@@ -10,7 +10,7 @@ class ClusterEntropy:
     def __init__(self):
         self.df = None  # 存储特征的one-hot变量
         self.list_name = None   # 存储排序后的词根名称，由于是有序的，所以可以作为词根到索引的映射字典，详见word_2_num和num_2_word
-        self.list_frequency = None  # 存储排序后的词根频率
+        self.list_fre = None    #
 
     def feature_to_vector(self):
         """
@@ -41,19 +41,21 @@ class ClusterEntropy:
         # print("drop_list:", len(drop_list))
         self.df = self.df.drop(drop_list, axis=1)   # 删除未出现过的词根
 
-    def df_sort(self):
+    def root_fre(self):
         """
-        根据词频对df的列进行重新排序,并获得排列后的特征词和相应的品侧
+        根据词频对df的列进行重新排序,并获得排列后的特征词和相应的频数,然后计算词根出现的频率
         :return:
         """
         root_count = dict(self.df.sum())  # sum对每一列求和，即能得到每个词根出现的频数
         # print("count_dic:" ,count_dic)
-        self.list_name, self.list_frequency = dict_sort(root_count)
+        self.list_name, list_frequency = dict_sort(root_count)
         # print("list_name:", self.list_name, "\n", "list_frequency:", self.list_frequency)
         self.df = self.df.ix[:, self.list_name]
         # print(self.df)
+        row_len = self.df.iloc[:, 0].size
+        self.list_fre = [i / row_len for i in list_frequency]
 
 if __name__ == "__main__":
     Cluster = ClusterEntropy()
     Cluster.feature_to_vector()
-    Cluster.df_sort()
+    Cluster.root_fre()
