@@ -2,6 +2,7 @@ import pandas as pd
 import itertools
 import operator
 import sys
+import pickle
 
 
 def get_data(path):
@@ -118,7 +119,20 @@ def index_2_word(root_name, combine_index):
         return word_map[combine_index]
 
 
+def word_2_index(list_name, list_word):
+    word_map = dict(zip(list_name, range(len(list_name))))
+    list_num = [[word_map[word] if word in word_map else word for word in i] for i in list_word]
+    return list_num
+
+
 def write_csv(name_list, file_path, *args):
+    """
+    将两两组合的互信息以及聚类结果输出到CSV文件中
+    :param name_list:位于输出的csv第一行的列索引
+    :param file_path:输出的csv路径
+    :param args:参数列表，表示需要输出的内容，对应参数name_list中提到的内容
+    :return:
+    """
     if len(name_list) != len(args):
         print('list长度不对应！')
         sys.exit(1)
@@ -140,9 +154,9 @@ def write_csv(name_list, file_path, *args):
 def cut_by_num(relatives_list, max_relatives_nums):
     """
     对list每个子list进行删除操作，保留前max_relatives_nums项
-    :param relatives_list:
-    :param max_relatives_nums:
-    :return:
+    :param relatives_list:亲友团列表
+    :param max_relatives_nums:保留的亲友团个数
+    :return:经过裁剪的亲友团列表
     """
     new_list = list()
     for i, row in enumerate(relatives_list):
@@ -152,3 +166,8 @@ def cut_by_num(relatives_list, max_relatives_nums):
         else:
             new_list.append(row)
     return new_list
+
+
+def save_pickle(file_name, input_data):
+    with open(file_name, 'wb') as f:
+        pickle.dump(input_data, f)

@@ -1,7 +1,9 @@
 import pandas as pd
 import numpy as np
-from data_utils import get_data, root_to_word, word_to_root, dict_sort, combine_count, index_2_word, write_csv
+from data_utils import get_data, root_to_word, word_to_root, dict_sort, combine_count, index_2_word, \
+    write_csv, word_2_index, cut_by_num
 from relatives import calculate_correlation, create_relatives
+from cluster import duplicate_removal, del_by_correlation, create_double_set, merge_loop
 
 medicine_path = 'data/test3.csv'    # 药物数据的路径
 thesaurus_path = "data/tongyici_3.txt"  # 同义词字典的路径
@@ -17,6 +19,7 @@ class ClusterEntropy:
         self.combine_index = None  # 存储排序后的组合，用词根的索引表示
         self.combine_fre = None  # 存储词根的两两组合出现的频率，同样用于计算互信息
         self.combine_name = None  # 存储用词根名称表示的
+        self.relatives_list = None  # 保存亲友团数量最大时的亲友团
 
     def feature_to_vector(self):
         """
@@ -80,13 +83,36 @@ class ClusterEntropy:
         # print(self.combine_fre)
 
     def search_relatives(self):
+        """
+        先计算每一对两两组合之间的互信息，然后根据最大亲友团数量找到每个词根的亲友团
+        :return:
+        """
         correlation = calculate_correlation(self.combine_index, self.combine_fre, self.root_fre)
         self.combine_name = index_2_word(self.root_name, self.combine_index)  # 将单独的词根和组合中的索引转换为词
         # 将互信息按照大小降序排列大小，然后再写入到csv中
         data = write_csv(['组合', '关联度系数'], correlation_path, self.combine_name, correlation)
         # 获取每个症状的亲友团list
-        relatives_list = create_relatives(self.root_name, data, max_relatives_nums)
+        self.relatives_list = create_relatives(self.root_name, data, max_relatives_nums)
         # print("relatives_list", relatives_list)  # 这里的亲友团是用嵌套列表存储的，用字典存储应该更好吧？键值对为变量-亲友团列表
+
+    def cluster(self):
+        """
+        对亲友团进行聚类
+        :return:
+        """
+        # print("relatives_list", relatives_list)
+        list_qyt = duplicate_removal(self.relatives_list, self.root_name)   # 去除重复项，但是存在一些问题？
+        list_index = word_2_index(self.root_name, list_qyt)  # 使用索引代替列表中的项
+        for group_num in range(3, 9):   # 限制亲友团的数量，根据不同的亲友团数量进行聚类
+            new_list = cut_by_num(list_index, group_num)    # 对亲友团进行裁剪
+            list_index_2 = del_by_correlation(new_list)    # 删除弱相关项，留下强相关的两两组合
+            # re_word = index_2_word(root_name, list_index_2)
+            double_set = create_double_set(list_index_2)  # 创建二元组
+            # print("doubleSet:", doubleSet)
+            # 进行团合并操作，一直到无法继续合并
+            max_num, best_set = merge_loop(double_set, self.root_name, 'data/group' + str(group_num) + '.csv')
+            # 计算信息利用率
+            print(max_num, '/', group_num, '=', max_num / group_num)
 
 if __name__ == "__main__":
     Cluster = ClusterEntropy()
@@ -94,3 +120,4 @@ if __name__ == "__main__":
     Cluster.root_frequency()
     Cluster.combine_frequency()
     Cluster.search_relatives()
+    Cluster.cluster()
