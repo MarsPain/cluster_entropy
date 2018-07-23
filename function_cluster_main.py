@@ -1,11 +1,12 @@
 import pandas as pd
 import numpy as np
 from data_utils import get_data, root_to_word, word_to_root, dict_sort, combine_count, index_2_word, write_csv
-from relatives import calculate_correlation
+from relatives import calculate_correlation, create_relatives
 
 medicine_path = 'data/test3.csv'    # 药物数据的路径
 thesaurus_path = "data/tongyici_3.txt"  # 同义词字典的路径
 correlation_path = 'data/correlation.csv'   # 保存互信息的文件路径
+max_relatives_nums = 8  # 最大的亲友团数量
 
 
 class ClusterEntropy:
@@ -83,9 +84,9 @@ class ClusterEntropy:
         self.combine_name = index_2_word(self.root_name, self.combine_index)  # 将单独的词根和组合中的索引转换为词
         # 将互信息按照大小降序排列大小，然后再写入到csv中
         data = write_csv(['组合', '关联度系数'], correlation_path, self.combine_name, correlation)
-        # # 获取每个症状的亲友团list
-        # relatives_list = clus2.relatives_2(list_name, data, 8)
-        # print("relatives_list", relatives_list) #这里的亲友团是用嵌套列表存储的，用字典存储应该更好吧？键值对为变量-亲友团列表
+        # 获取每个症状的亲友团list
+        relatives_list = create_relatives(self.root_name, data, max_relatives_nums)
+        # print("relatives_list", relatives_list)  # 这里的亲友团是用嵌套列表存储的，用字典存储应该更好吧？键值对为变量-亲友团列表
 
 if __name__ == "__main__":
     Cluster = ClusterEntropy()

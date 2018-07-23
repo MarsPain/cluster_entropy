@@ -110,10 +110,10 @@ def index_2_word(root_name, combine_index):
     word_map = dict(enumerate(root_name))
     # 利用递归
     if isinstance(combine_index, (list, tuple, set)):
-        newList = list()
+        new_list = list()
         for item in combine_index:
-            newList.append(index_2_word(root_name, item))
-        return newList
+            new_list.append(index_2_word(root_name, item))
+        return new_list
     else:
         return word_map[combine_index]
 
@@ -123,7 +123,7 @@ def write_csv(name_list, file_path, *args):
         print('list长度不对应！')
         sys.exit(1)
     series_list = []
-    #注意这里输出数据的技巧
+    # 注意这里输出数据的技巧
     for i, name in enumerate(name_list):
         # print("i:", i, "\n", "name:", name)
         # 注意这里Series的用法，args是参数列表，代表两个列表，直接用整个列表构造Series，设置name为列索引
@@ -135,3 +135,20 @@ def write_csv(name_list, file_path, *args):
     # data = data.sort_values(by=name_list[1], ascending=False)
     data.to_csv(file_path, index=False, encoding='utf-8')
     return data
+
+
+def cut_by_num(relatives_list, max_relatives_nums):
+    """
+    对list每个子list进行删除操作，保留前max_relatives_nums项
+    :param relatives_list:
+    :param max_relatives_nums:
+    :return:
+    """
+    new_list = list()
+    for i, row in enumerate(relatives_list):
+        # print("i:", i, "\n", "row:", row)
+        if len(row) > max_relatives_nums:
+            new_list.append(row[:max_relatives_nums])
+        else:
+            new_list.append(row)
+    return new_list
