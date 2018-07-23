@@ -1,7 +1,8 @@
 import pandas as pd
 import numpy as np
+import os
 from data_utils import get_data, root_to_word, word_to_root, dict_sort, combine_count, index_2_word, \
-    write_csv, word_2_index, cut_by_num
+    write_csv, word_2_index, cut_by_num, group_clean
 from relatives import calculate_correlation, create_relatives
 from cluster import duplicate_removal, del_by_correlation, create_double_set, merge_loop
 
@@ -9,6 +10,8 @@ medicine_path = 'data/test3.csv'    # 药物数据的路径
 thesaurus_path = "data/tongyici_3.txt"  # 同义词字典的路径
 correlation_path = 'data/correlation.csv'   # 保存互信息的文件路径
 max_relatives_nums = 8  # 最大的亲友团数量
+min_relatives_nums = 3  # 最小的亲友团数量
+group_all_path = "data/group_all.csv"
 
 
 class ClusterEntropy:
@@ -90,7 +93,7 @@ class ClusterEntropy:
         correlation = calculate_correlation(self.combine_index, self.combine_fre, self.root_fre)
         self.combine_name = index_2_word(self.root_name, self.combine_index)  # 将单独的词根和组合中的索引转换为词
         # 将互信息按照大小降序排列大小，然后再写入到csv中
-        data = write_csv(['组合', '关联度系数'], correlation_path, self.combine_name, correlation)
+        data = write_csv(['组合', '关联度系数'], correlation_path, [self.combine_name, correlation])
         # 获取每个症状的亲友团list
         self.relatives_list = create_relatives(self.root_name, data, max_relatives_nums)
         # print("relatives_list", relatives_list)  # 这里的亲友团是用嵌套列表存储的，用字典存储应该更好吧？键值对为变量-亲友团列表
@@ -103,7 +106,7 @@ class ClusterEntropy:
         # print("relatives_list", relatives_list)
         list_qyt = duplicate_removal(self.relatives_list, self.root_name)   # 去除重复项，但是存在一些问题？
         list_index = word_2_index(self.root_name, list_qyt)  # 使用索引代替列表中的项
-        for group_num in range(3, 9):   # 限制亲友团的数量，根据不同的亲友团数量进行聚类
+        for group_num in range(min_relatives_nums, max_relatives_nums+1):   # 限制亲友团的数量，根据不同的亲友团数量进行聚类
             new_list = cut_by_num(list_index, group_num)    # 对亲友团进行裁剪
             list_index_2 = del_by_correlation(new_list)    # 删除弱相关项，留下强相关的两两组合
             # re_word = index_2_word(root_name, list_index_2)
@@ -114,6 +117,21 @@ class ClusterEntropy:
             # 计算信息利用率
             print(max_num, '/', group_num, '=', max_num / group_num)
 
+    @staticmethod
+    def group_all():
+        """
+        先将基于不同数量亲友团的聚类结果进行清理、删除被包含在更大团中的团，然后将清洗后的聚类结果进行结合并输出
+        :return:
+        """
+        group_all = []
+        group_name = []
+        for i in range(max_relatives_nums, 4, -1):
+            group_path = os.path.join("data", "group"+str(i)+".csv.pkl")
+            group_name.append("group"+str(i))
+            group_all.append(group_clean(group_path))
+        write_csv(group_name, group_all_path, group_all)
+
+
 if __name__ == "__main__":
     Cluster = ClusterEntropy()
     Cluster.feature_to_vector()
@@ -121,3 +139,4 @@ if __name__ == "__main__":
     Cluster.combine_frequency()
     Cluster.search_relatives()
     Cluster.cluster()
+    Cluster.group_all()

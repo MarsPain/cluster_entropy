@@ -81,7 +81,7 @@ def merge_loop(double_set, root_name, file=None):
     # 若oldSet不存在，则说明聚类收敛、合并到最大的团了，无法继续合并了
     if file is not None:
         group_list = index_2_word(root_name, group_list)
-        write_csv(['成员数', '个数', '团'], file, num_list, count_list, group_list)
+        write_csv(['成员数', '个数', '团'], file, [num_list, count_list, group_list])
         save_pickle(file + '.pkl', group_list)
     return len(list(best_set)[0]), best_set
 

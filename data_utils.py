@@ -3,6 +3,7 @@ import itertools
 import operator
 import sys
 import pickle
+import copy
 
 
 def get_data(path):
@@ -119,16 +120,22 @@ def index_2_word(root_name, combine_index):
         return word_map[combine_index]
 
 
-def word_2_index(list_name, list_word):
-    word_map = dict(zip(list_name, range(len(list_name))))
+def word_2_index(root_name, list_word):
+    """
+    通过list_name生成（当归：0）这样的dict，然后把中文词根转换为索引
+    :param root_name:中药名的list
+    :param list_word:需要进行转换的列表
+    :return:
+    """
+    word_map = dict(zip(root_name, range(len(root_name))))
     list_num = [[word_map[word] if word in word_map else word for word in i] for i in list_word]
     return list_num
 
 
-def write_csv(name_list, file_path, *args):
+def write_csv(name_list, file_path, args):
     """
     将两两组合的互信息以及聚类结果输出到CSV文件中
-    :param name_list:位于输出的csv第一行的列索引
+    :param name_list:存储位于输出的csv第一行的列索引列表
     :param file_path:输出的csv路径
     :param args:参数列表，表示需要输出的内容，对应参数name_list中提到的内容
     :return:
@@ -169,5 +176,57 @@ def cut_by_num(relatives_list, max_relatives_nums):
 
 
 def save_pickle(file_name, input_data):
+    """
+    对聚类结果进行存储
+    :param file_name:存储的文件路径
+    :param input_data:需要存储的数据
+    :return:
+    """
     with open(file_name, 'wb') as f:
         pickle.dump(input_data, f)
+
+
+def load_pickle(file_name):
+    """
+    对被存储的聚类结果进行读取
+    :param file_name:
+    :return:
+    """
+    with open(file_name, 'rb') as f:
+        output_data = pickle.load(f)
+    return output_data
+
+
+def is_in(sub_list, parent_list):
+    """
+    判断sub_list是否出现在parent_list中
+    :param sub_list:
+    :param parent_list:
+    :return:
+    """
+    d = [False for item in sub_list if item not in parent_list]
+    return not d
+
+
+def group_clean(pkl_file):
+    """
+    把不同成员数的亲友团整理在一起，即删除存在于更大团中的小团
+    :param pkl_file:被保存的聚类结果
+    :return:
+    """
+    group = load_pickle(pkl_file)     # group中每种大小的团组成一个列表
+    # print("group:", len(group), group)
+    all_list = []
+    for i in range(len(group) - 1, 0, -1):  # 从成员数最大的团的列表开始遍历
+        item = list(group[i])
+        # member_num = len(item[0])
+        # print("member_num:", member_num)
+        # 删除被包含在更大的团中的团
+        new_item = copy.deepcopy(item)  # 用来进行删除操作的复制项
+        for item_li in item:
+            for li in all_list:
+                if is_in(item_li, li) and item_li in new_item:
+                    new_item.remove(item_li)
+                    break
+        all_list.extend(new_item)
+    return all_list
