@@ -1,5 +1,6 @@
 import itertools
 import pandas as pd
+import numpy as np
 
 # [[a,b], [a,c], [a,d]]变为[b, c, d]
 # def duplicate_removal(relatives_list, list_name):
@@ -23,18 +24,24 @@ import pandas as pd
 # #从测试结果来看，数字型列表的输出存在问题，但是字符型列表的输出又是正常的，考虑到处理的字符型列表，暂时搁置该问题
 # print(duplicate_removal(l, list_name))
 
-#itertools.combinations的使用方法
+# itertools.combinations的使用方法
 # l = [1,2,3,4,5,6]
 # for i in itertools.combinations(l, 2):
 #     print(i)
 
-df = pd.DataFrame([[1,0,1,0], [0,1,1,0], [0,1,1,0], [0,0,0,0]])
-row_len = df.iloc[:, 0].size
-print(row_len)
-print(df)
-max_value = df.max()
-drop_list = list(max_value[max_value == 0].index)   # 找到最大值为0所在的列的索引
-print(drop_list)
-# print("drop_list:", len(drop_list))
-df = df.drop(drop_list, axis=1)
-print(df)
+# df = pd.DataFrame([[1,0,1,0], [0,1,1,0], [0,1,1,0], [0,0,0,0]])
+# row_len = df.iloc[:, 0].size
+# print(row_len)
+# print(df)
+# max_value = df.max()
+# drop_list = list(max_value[max_value == 0].index)   # 找到最大值为0所在的列的索引
+# print(drop_list)
+# # print("drop_list:", len(drop_list))
+# df = df.drop(drop_list, axis=1)
+# print(df)
+
+# a = np.array([1,2,3,4,5])
+# print(type(a[0]))
+# a.astype("float")
+# b = a.astype("float")
+# print(type(a[0]), type(b[0]))
