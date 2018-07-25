@@ -83,6 +83,7 @@ def merge_loop(double_set, root_name, file=None):
         group_list = index_2_word(root_name, group_list)
         write_csv(['成员数', '个数', '团'], file, [num_list, count_list, group_list])
         save_pickle(file + '.pkl', group_list)
+    print(best_set)
     return len(list(best_set)[0]), best_set
 
 

@@ -13,7 +13,8 @@ def get_data(path):
     :return:datafram
     """
     df = pd.read_csv(path, encoding='utf8')
-    series = df['symptom']
+    # series = df['symptom']  # 读取症状数据
+    series = df['Function']  # 读取功效数据
     series.dropna(inplace=True)  # 删掉nan
     return series
 
@@ -66,7 +67,7 @@ def dict_sort(root):
     for i in reversed_list:
         list_name.append(i[0])
         list_frequecy.append(i[-1])
-    print("list_name:", list_name, "\n", "list_frequecy:", list_frequecy)
+    # print("list_name:", list_name, "\n", "list_frequecy:", list_frequecy)
     return list_name, list_frequecy
 
 

@@ -1,13 +1,16 @@
 import pandas as pd
 import numpy as np
 import os
+import re
 from data_utils import get_data, root_to_word, word_to_root, dict_sort, combine_count, index_2_word, \
     write_csv, word_2_index, cut_by_num, group_clean
 from relatives import calculate_correlation, create_relatives
 from cluster import duplicate_removal, del_by_correlation, create_double_set, merge_loop
 
-medicine_path = 'data/test3.csv'    # 药物数据的路径
-thesaurus_path = "data/tongyici_3.txt"  # 同义词字典的路径
+# medicine_path = 'data/test3.csv'    # 方剂数据的路径
+medicine_path = 'data/test4.csv'    # 药物数据的路径
+# thesaurus_path = "data/tongyici_3.txt"  # 症状同义词字典的路径
+thesaurus_path = "data/function_tongyici.txt"  # 功效同义词字典的路径
 correlation_path = 'data/correlation.csv'   # 保存互信息的文件路径
 max_relatives_nums = 8  # 最大的亲友团数量
 min_relatives_nums = 3  # 最小的亲友团数量
@@ -32,16 +35,17 @@ class ClusterEntropy:
         series = get_data(medicine_path)
         # print("series", series)
         root_2_word = root_to_word(thesaurus_path)  # 获取同义词根到词的映射字典
-        # print("root_2_word", root_2_word)
+        # print("root_2_word", len(root_2_word), root_2_word)
         word_2_root = word_to_root(thesaurus_path)     # 获取词到同义词根的映射字典
-        # print("word_2_root", word_2_root)
+        # print("word_2_root", len(word_2_root), word_2_root)
         # 创建并初始化一个DataFrame存储one-hot向量，第一行的列索引为词根
         self.df = pd.DataFrame(np.zeros((len(series), len(root_2_word))), columns=root_2_word.keys())
         for indexs in series.index:  # series去掉了nan值，index是不连贯的,所以用这种方法遍历
             item_str = series[indexs]
             if item_str == '':
                 continue
-            item_list = item_str.strip().split()
+            # item_list = item_str.strip().split()  # 针对以空格作为分隔符的症状数据
+            item_list = re.split("、", item_str)  # 针对以“、”作为分隔符的功效数据
             for item in item_list:
                 if item in word_2_root:
                     # 找到每个功效特征词的词根，然后在one-hot向量的相应索引处进行激活
@@ -63,7 +67,7 @@ class ClusterEntropy:
         root_count = dict(self.df.sum())  # sum对每一列求和，即能得到每个词根出现的频数
         # print("count_dic:" ,count_dic)
         self.root_name, root_nums = dict_sort(root_count)
-        # print("list_name:", self.list_name, "\n", "list_frequency:", self.list_frequency)
+        print("list_name:", self.root_name, "\n", "list_frequency:", root_nums)
         self.df = self.df.ix[:, self.root_name]
         # print(self.df)
         row_len = self.df.iloc[:, 0].size
