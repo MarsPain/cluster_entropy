@@ -31,19 +31,21 @@ class ClusterEntropy:
         """
         series = get_data(medicine_path)
         # print("series", series)
-        word_2_root = root_to_word(thesaurus_path)  # 词到同义词根的映射字典
-        root_2_word = word_to_root(thesaurus_path)     # 同义词根到词的映射字典
+        root_2_word = root_to_word(thesaurus_path)  # 获取同义词根到词的映射字典
+        # print("root_2_word", root_2_word)
+        word_2_root = word_to_root(thesaurus_path)     # 获取词到同义词根的映射字典
+        # print("word_2_root", word_2_root)
         # 创建并初始化一个DataFrame存储one-hot向量，第一行的列索引为词根
-        self.df = pd.DataFrame(np.zeros((len(series), len(word_2_root))), columns=word_2_root.keys())
+        self.df = pd.DataFrame(np.zeros((len(series), len(root_2_word))), columns=root_2_word.keys())
         for indexs in series.index:  # series去掉了nan值，index是不连贯的,所以用这种方法遍历
             item_str = series[indexs]
             if item_str == '':
                 continue
             item_list = item_str.strip().split()
             for item in item_list:
-                if item in root_2_word:
+                if item in word_2_root:
                     # 找到每个功效特征词的词根，然后在one-hot向量的相应索引处进行激活
-                    self.df[root_2_word[item]].loc[indexs] = 1
+                    self.df[word_2_root[item]].loc[indexs] = 1
                 else:
                     print(item)  # 输出没有匹配的词，进行人工处理
         # 删除没有任何匹配的词根
